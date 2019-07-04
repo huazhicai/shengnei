@@ -125,5 +125,5 @@ def main(page):
 
 
 if __name__ == '__main__':
-    for page in range(10, 21):
+    for page in range(1, 21):
         main(page)
