@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="WebServers">
+    <option name="servers">
+      <webServer id="52eb186b-d5be-407c-afa6-46a69589ee64" name="shengnei" url="http://bluelog.synvn.top">
+        <fileTransfer host="bluelog.synvn.top" port="1022" accessType="SFTP">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" passiveMode="true" shareSSLContext="true" />
+          </advancedOptions>
+          <option name="port" value="1022" />
+        </fileTransfer>
+      </webServer>
+    </option>
+  </component>
+</project>

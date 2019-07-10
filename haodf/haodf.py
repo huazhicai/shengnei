@@ -42,30 +42,33 @@ def get_detail(url):
 def parse_detail(url):
     chrome_options = webdriver.ChromeOptions()
     chrome_options.add_argument('--headless')
+    chrome_options.add_argument('--no-sandbox')
     browser = webdriver.Chrome(options=chrome_options)
     browser.get(url)
     html = browser.page_source
     doc = pq(html)
     intro_url = url
     name = doc('.nav h1 a').text() or doc('div.lt_name > a > h1 > span:nth-child(1)').text()
-    department = doc('div.lt > table > tbody td:nth-child(3) > a > h2').text()
-    title = doc('div.lt > table:nth-child(1) > tbody > tr:nth-child(2) > td:nth-child(3)').text()
-    special = doc('#full_DoctorSpecialize').text()
-    experience = doc('div.lt > table:nth-child(1) > tbody > tr:nth-child(4) > td:nth-child(3)').text()
+    department = doc('div.lt > table:nth-child(1) tr td:nth-child(3) > a > h2').text()
+    title = doc('div.lt > table:nth-child(1) tr:nth-last-child(3) > td:nth-last-child(1)').text()
+    # title = re.search(r'职　　称：</td>.*?<td valign="top">(.*?)</td>', html, re.S).group(1)
+    special = doc('#full_DoctorSpecialize').text() or '暂无'
+    experience = doc('#full').text() or doc(
+        'div.lt>table:nth-child(1) tr:nth-last-child(1) td:nth-last-child(1)').text()
     person_web = doc('.doctor-home-page.clearfix > span:nth-child(3) > a').text()
     if person_web:
         outpatient_info = parse_outpatient_info(person_web)
     else:
         outpatient_info = parse_menzheng_info(doc)
     yield {
-        'intro_url': intro_url,
         'name': name,
         'department': department,
         'title': title,
         'special': special,
         'experience': experience,
         'person_web': person_web,
-        'outpatient_info': outpatient_info
+        'outpatient_info': outpatient_info,
+        'intro_url': intro_url
     }
 
 
@@ -110,6 +113,7 @@ def save_to_mongo(result):
     # if collection.insert_one(result):
     # 通过mongodb进行去重操作，每次插入新数据前都会检查name是否存在，不存在就进行插入
     if result['name']:
+        # collection.insert_one(result)
         collection.update_one({'name': result['name']}, {'$set': result}, True)
         print(result)
 
@@ -117,8 +121,9 @@ def save_to_mongo(result):
 def main(page):
     resp = get_index(page)
     detail_links = parse_index(resp)
-    for link in detail_links:
+    for a, link in enumerate(detail_links):
         url = 'https:' + link.attr('href')
+        print(a, url)
         results = parse_detail(url)
         for result in results:
             save_to_mongo(result)
